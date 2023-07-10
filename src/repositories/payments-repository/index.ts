@@ -1,5 +1,7 @@
 import { prisma } from "@/config";
 import { TicketTypeId } from "@/controllers/tickets-controller";
+import { notFoundError, unauthorizedError } from "@/errors";
+import { PaymentType } from "@/protocols";
 
 async function findPayment(ticketId:number) {
     return prisma.payment.findFirst({
@@ -9,15 +11,38 @@ async function findPayment(ticketId:number) {
     })
 }
 
-async function createTicket({ticketTypeId}:TicketTypeId, enrollmentId:number) {
-    return prisma.ticket.create({
+async function createPayment(paymentData:PaymentType, userId:number) {
+    const value = await prisma.ticket.findFirst({
+        where:{
+            id:paymentData.ticketId
+        },
+        include:{
+            TicketType:{
+                select:{
+                    price:true
+                }
+            }
+        }
+    })
+
+    if(!value) throw notFoundError()
+    const ticket = await findTicket(paymentData.ticketId)
+    if(ticket.Enrollment.userId !== userId) throw unauthorizedError()
+    const cardLastDigits = String(paymentData.cardData.number).slice(-4)
+    await prisma.ticket.update({
+        data:{
+            status:"PAID",
+        },
+        where:{
+            id:paymentData.ticketId
+        }
+    })
+    return await prisma.payment.create({
         data: {
-            ticketTypeId,
-            status: "RESERVED",
-            enrollmentId
-          },
-          include: {
-            TicketType: true
+            ticketId: paymentData.ticketId,
+            cardIssuer: paymentData.cardData.issuer,
+            value: value.TicketType.price,
+            cardLastDigits,
           }
     })
 }
@@ -34,7 +59,7 @@ async function findTicket(ticketId:number) {
 const paymentsRepository = {
     findPayment,
     findTicket,
-    createTicket
+    createPayment
   };
   
   export default paymentsRepository;

@@ -27,7 +27,16 @@ export type ViaCEPAddressResponse = {
   ddd: string;
   siafi: string;
 };
-
+export type PaymentType = {
+  ticketId: number;
+  cardData: {
+    issuer: string;
+    number: number;
+    name: string;
+    expirationDate: Date;
+    cvv: number;
+  }
+};
 export type AddressEnrollment = {
   logradouro: string;
   complemento: string;
