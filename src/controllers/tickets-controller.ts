@@ -20,7 +20,7 @@ export async function postTicket(req:Request, res:Response) {
     const {userId} = res.locals as JwtPayload
     try {
         const tickets = await ticketsService.createTicket(ticketTypeId, userId)
-        res.status(200).send(tickets)
+        res.status(httpStatus.CREATED).send(tickets)
     } catch (error) {
         if (error.name === 'NotFoundError') {
             return res.sendStatus(httpStatus.NOT_FOUND);
@@ -36,7 +36,7 @@ export async function getTicketById(req:Request, res:Response) {
     const {userId} = res.locals as JwtPayload
     try {
         const ticket = await ticketsService.userTicket(userId)
-        res.status(200).send(ticket)
+        res.status(httpStatus.OK).send(ticket)
     } catch (error) {
         
         return res.sendStatus(httpStatus.NOT_FOUND);

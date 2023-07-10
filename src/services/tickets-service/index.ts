@@ -20,16 +20,11 @@ async function createTicket(ticketTypeId:TicketTypeId, userId:number) {
 
 async function userTicket(userId:number) {
     const enrollment = await ticketsRepository.findEnrollment(userId)
-    const ticket = await ticketsRepository.findTicket(enrollment.id)
-    const ticketType = await ticketsRepository.findTicketType(ticket.id)
-
+    const ticket = await ticketsRepository.findTicket(enrollment.id)    
     if(!enrollment || !ticket) {
         throw notFoundError()
     }
-    return {
-        ticket,
-        ticketType
-    }
+    return ticket
 }
 const ticketsService = {
     allTicketsService,
